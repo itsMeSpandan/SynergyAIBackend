@@ -1,5 +1,5 @@
 // index.js
-require('dotenv').config(); // Load .env variables
+require('dotenv').config(); // Load environment variables
 
 const express = require('express');
 const mongoose = require('mongoose');
@@ -20,7 +20,7 @@ admin.initializeApp({
   }),
 });
 
-// Mongoose User Schema
+// --- Mongoose User Schema ---
 const userSchema = new mongoose.Schema({
   fullname: String,
   email: { type: String, unique: true },
@@ -30,7 +30,12 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
-// Local Signup
+// --- Root Route ---
+app.get('/', (req, res) => {
+  res.send('Backend is running! 🚀');
+});
+
+// --- Local Signup ---
 app.post('/signup', async (req, res) => {
   try {
     const { fullname, email, password } = req.body;
@@ -40,6 +45,7 @@ app.post('/signup', async (req, res) => {
     const passwordHash = await bcrypt.hash(password, 10);
     const newUser = new User({ fullname, email, passwordHash, provider: 'local' });
     await newUser.save();
+
     res.status(201).json({ message: 'User created' });
   } catch (err) {
     if (err.code === 11000) res.status(400).json({ error: 'Email already exists.' });
@@ -47,7 +53,7 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Google Sign-In
+// --- Google Sign-In ---
 app.post('/google-signin', async (req, res) => {
   try {
     const { idToken } = req.body;
@@ -72,7 +78,7 @@ app.post('/google-signin', async (req, res) => {
   }
 });
 
-// Login
+// --- Local Login ---
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -94,7 +100,7 @@ app.post('/login', async (req, res) => {
   }
 });
 
-// Connect to MongoDB and start server
+// --- Connect to MongoDB and Start Server ---
 mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     const port = process.env.PORT || 3000;
